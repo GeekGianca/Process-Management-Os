@@ -2,23 +2,46 @@ package com.gksoftware.processmanagement;
 
 import javafx.application.Application;
 import static javafx.application.Application.launch;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 
 public class MainApp extends Application {
-
+    private double x,y;
+    
     @Override
-    public void start(Stage stage) throws Exception {
+    public void start(final Stage stage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("/fxml/Scene.fxml"));
         
         Scene scene = new Scene(root);
         scene.getStylesheets().add("/styles/Styles.css");
         
-        stage.setTitle("JavaFX and Maven");
+        stage.setTitle("Gestor de procesos");
         stage.setScene(scene);
+        stage.initStyle(StageStyle.UNDECORATED);
+        root.setOnMousePressed(new EventHandler<MouseEvent>(){
+            @Override
+            public void handle(MouseEvent event) {
+                x = event.getSceneX();
+                y = event.getSceneY();
+            }
+            
+        });
+        
+        root.setOnMouseDragged(new EventHandler<MouseEvent>(){
+            @Override
+            public void handle(MouseEvent event) {
+                stage.setX(event.getSceneX() - x);
+                stage.setY(event.getSceneY()-y);
+            }
+            
+        });
+        
         stage.show();
     }
 
