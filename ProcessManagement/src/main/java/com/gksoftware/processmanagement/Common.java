@@ -75,43 +75,12 @@ public class Common {
             process.setPriority(priority);
             process.setCharacters(characters);
             process.setCharacterReplaced(String.valueOf(charReplaced));
-            int burst = getBurst(characters, charReplaced.charAt(0));
-            process.setBurst(burst);
         }
         return process;
     }
     
-    private static int getBurst(String characters, char character){
-        int position = 0;
-        int counter = 0;
-        position = characters.toLowerCase().indexOf(character);
-        System.out.println(characters.toLowerCase().indexOf(character));
-        while (position != -1) {
-            counter++;
-            position = characters.toLowerCase().indexOf(character, position+1);
-            System.out.println(characters.toLowerCase().indexOf(character, position+1));
-        }
-        return counter;
-    }
     
-    public static String changeCharacters(String characters){
-        int position = 0;
-        int counter = 0;
-        int burst = getBurst(characters, 'o');
-        System.out.println("Coincidencias: "+burst);
-        position = characters.toLowerCase().indexOf(REPLACEMENT_CHAR);
-        System.out.println(characters.toLowerCase().indexOf(REPLACEMENT_CHAR));
-        while (position != -1) {
-            counter++;
-            position = characters.toLowerCase().indexOf(REPLACEMENT_CHAR, position+1);
-            String replaced = "";
-            for (int i = 0; i < characters.length(); i++) {
-                System.out.println(characters.charAt(i));
-                replaced += characters.charAt(i);
-                System.out.println(replaced);
-            }
-        }
-        return "";
-    }
+    
+    
 
 }

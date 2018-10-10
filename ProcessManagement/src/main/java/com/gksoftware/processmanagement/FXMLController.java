@@ -13,28 +13,32 @@ import javafx.fxml.Initializable;
 import javafx.scene.layout.HBox;
 import com.gksoftware.processmanagement.model.Process;
 import com.gksoftware.processmanagement.model.ProcessTable;
-import com.gksoftware.processmanagement.services.ServiceQueue;
+import com.gksoftware.processmanagement.queues.*;
+import com.gksoftware.processmanagement.services.LoadProcessServiceFacade;
+import com.gksoftware.processmanagement.services.ThreadProcess;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXCheckBox;
 import com.jfoenix.controls.JFXPopup;
 import com.jfoenix.controls.JFXProgressBar;
-import java.util.PriorityQueue;
+import com.jfoenix.controls.JFXSnackbar;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -42,11 +46,15 @@ public class FXMLController implements Initializable {
 
     private Process process;
     private Alert alert;
-    private PriorityQueue<Process> pqueue = new PriorityQueue<>();//Queue By priority
-    private ServiceQueue squeue = new ServiceQueue();//Availables 
-    private ServiceQueue equeue = new ServiceQueue();//Execute Queues
-    private Task processTask;
-    private int sizeSelected = 0;
+    private PriorityQueue priorityQueue = new PriorityQueue();
+    private Queue queue = new Queue();
+    private LoadProcessServiceFacade ptService;
+    private Queue<ThreadProcess> readyProcess = new Queue<>();
+    private Thread threadProcess;
+    private ThreadProcess currentThread;
+
+    @FXML
+    private AnchorPane homeAnchor;
 
     @FXML
     private Label procAvailable;
@@ -79,6 +87,12 @@ public class FXMLController implements Initializable {
     private JFXProgressBar progressProcessBar;
 
     @FXML
+    private Button btnStart;
+
+    @FXML
+    private Button btnStop;
+
+    @FXML
     private JFXListView<HBox> listNewProcess;
     private JFXPopup popupList = new JFXPopup();
 
@@ -88,8 +102,9 @@ public class FXMLController implements Initializable {
     private Label currentPid;
     @FXML
     private Label currentNameProcess;
+
     /**
-     *
+     * Components for table process in the view
      */
     @FXML
     private TableView<ProcessTable> tableProcess;
@@ -112,9 +127,7 @@ public class FXMLController implements Initializable {
     private ObservableList<ProcessTable> observerTableProcess;
 
     @FXML
-    private void handleButtonAction(ActionEvent event) {
-
-    }
+    private Button btnContinue;
 
     @FXML
     private void showPopup(MouseEvent event) {
@@ -142,8 +155,8 @@ public class FXMLController implements Initializable {
                     procAvailable.setText(String.valueOf(Common.processAvailable));
                     Common.loadRecentlyAddProcess(listNewProcess, process);
                     clear();
-                    squeue.push(process);//Add to queue FIFO
-                    pqueue.add(process);//Add to queue by priority
+                    priorityQueue.push(process.getPriority(), process, process.getPid());
+                    queue.push(process);
                 }
             } else {
                 alert = new Alert(Alert.AlertType.ERROR);
@@ -162,23 +175,67 @@ public class FXMLController implements Initializable {
 
     @FXML
     private void startProcess(ActionEvent event) {
-        if (thinput.getText().matches("[0-9]*")) {
-            Common.thmillis = Long.parseLong(thinput.getText());
-            progressProcessBar.setProgress(0.0D);
-            processTask = initProcessTask();
-            progressProcessBar.progressProperty().unbind();
-            progressProcessBar.progressProperty().bind(processTask.progressProperty());
-            processTask.messageProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
-                progressStatus.setText(newValue);
-            });
-            new Thread(processTask).start();
-            if (checkPriority.isSelected()) {
-                sizeSelected = pqueue.size();
-            } else {
-                sizeSelected = squeue.size();
+        checkPriority.setDisable(true);
+        btnStart.setDisable(true);
+        btnStop.setDisable(false);
+        if (readyProcess.size() > 0) {
+            while (!readyProcess.isEmpty()) {
+                try {
+                    currentThread = (ThreadProcess)readyProcess.peek().getElement();
+                    currentThread.setProgress(progressProcessBar);
+                    currentThread.setLblPid(currentPid);
+                    currentThread.setLblName(currentNameProcess);
+                    currentThread.execute();
+                    currentThread.gettProcess().join();
+                    readyProcess.pop();
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(FXMLController.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
-
+        }else{
+            
         }
+    }
+
+    @FXML
+    private void stopProcess(ActionEvent event) {
+        btnStart.setVisible(false);
+        btnContinue.setVisible(true);
+        btnContinue.setDisable(false);
+        btnStop.setDisable(true);
+    }
+
+    @FXML
+    private void continueProcess(ActionEvent event) {
+        btnContinue.setDisable(true);
+        btnStop.setDisable(false);
+    }
+
+    @FXML
+    private void loadProcess(ActionEvent event) {
+        if (thinput.getText().matches("[0-9]*") && thinput.getText().length() > 0) {
+            Common.thmillis = Long.parseLong(thinput.getText());
+            
+            ptService = new LoadProcessServiceFacade(
+                    observerTableProcess,
+                    progressProcessBar,
+                    tableProcess,
+                    progressStatus,
+                    currentNameProcess,
+                    currentPid,
+                    checkPriority,
+                    priorityQueue,
+                    queue,
+                    btnStart,
+                    readyProcess
+            );
+            
+        } else {
+            thinput.setFocusColor(Color.web("#d50000"));
+            JFXSnackbar snackbar = new JFXSnackbar(homeAnchor);
+            snackbar.show("Error TH(millis) is Empty", 5000);
+        }
+
     }
 
     @Override
@@ -187,6 +244,12 @@ public class FXMLController implements Initializable {
             int priorityListener = (int) (Math.random() * 3);
             priority.setText(String.valueOf(priorityListener));
         });
+        thinput.textProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
+            if (!newValue.equals("")) {
+                thinput.setFocusColor(Color.web("#edb407"));
+            }
+        });
+
         initPopup();
         initTableProcess();
         loadAutomaticProcess();
@@ -233,7 +296,24 @@ public class FXMLController implements Initializable {
         stateProcessCol.setCellValueFactory(new PropertyValueFactory<>("state"));
     }
 
-    private Task initProcessTask() {
+    private void loadAutomaticProcess() {
+        char[] letters = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'ñ', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
+        pid.setText(String.valueOf(System.currentTimeMillis()));
+        String data = "";
+        for (int i = 0; i < 15; i++) {
+            data += letters[(int) (Math.random() * (26))];
+        }
+        processName.setText(data);
+        data = "";
+        for (int i = 0; i < 24; i++) {
+            data += letters[(int) (Math.random() * (26))];
+        }
+        characters.setText(data);
+        charReplaced.setText(String.valueOf(letters[(int) (Math.random() * (26))]));
+    }
+
+}
+/*private Task initProcessTask() {
         return new Task() {
             @Override
             protected Object call() throws Exception {
@@ -271,7 +351,10 @@ public class FXMLController implements Initializable {
                 updateMessage(String.valueOf(rest + processCounter + "%"));
                 int processCounterSize = observerTableProcess.size();
                 int counterTime = 0;
-                progressProcessBar.setProgress(0.0D);
+                Thread.sleep(Common.thmillis);
+                updateProgress(0.0D, 100);
+                updateMessage(String.valueOf(0 + "%"));
+                //progressProcessBar.setProgress(0.0D);
                 while (counterTime < processCounterSize) {
                     Thread.sleep(Common.thmillis);
                     ProcessTable process = new ProcessTable();
@@ -286,22 +369,4 @@ public class FXMLController implements Initializable {
                 return true;
             }
         };
-    }
-
-    private void loadAutomaticProcess() {
-        char[] letters = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'ñ', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
-        pid.setText(String.valueOf(System.currentTimeMillis()));
-        String data = "";
-        for (int i = 0; i < 15; i++) {
-            data += letters[(int) (Math.random() * (26))];
-        }
-        processName.setText(data);
-        data = "";
-        for (int i = 0; i < 24; i++) {
-            data += letters[(int) (Math.random() * (26))];
-        }
-        characters.setText(data);
-        charReplaced.setText(String.valueOf(letters[(int) (Math.random() * (26))]));
-    }
-
-}
+    }*/

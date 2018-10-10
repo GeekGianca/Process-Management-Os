@@ -16,6 +16,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author Geek-Programmer
  */
 @XmlRootElement(name = "Process")
+//ArrayList<ProcessRest>
 @XmlAccessorType(XmlAccessType.NONE)
 public class ProcessRest {
 
@@ -29,8 +30,6 @@ public class ProcessRest {
     private String characters;
     @XmlElement(name = "charactersReplacement")
     private String charactersReplacement;
-    @XmlElement(name = "charactersReplaced")
-    private String charactersReplaced;
 
     public String getPid() {
         return pid;
@@ -64,14 +63,6 @@ public class ProcessRest {
         this.charactersReplacement = characters;
     }
 
-    public String getCharactersReplaced() {
-        return charactersReplaced;
-    }
-
-    public void setCharactersReplaced(String charactersReplaced) {
-        this.charactersReplaced = charactersReplaced;
-    }
-
     public String getCharacters() {
         return characters;
     }
@@ -83,12 +74,17 @@ public class ProcessRest {
     public ProcessRest() {
     }
 
-    public ProcessRest(String pid, String name, int priority, String characters, String charactersReplacement, String charactersReplaced) {
+    public ProcessRest(String pid, String name, int priority, String characters, String charactersReplacement) {
         this.pid = pid;
         this.name = name;
         this.priority = priority;
         this.characters = characters;
         this.charactersReplacement = charactersReplacement;
-        this.charactersReplaced = charactersReplaced;
     }
+
+    @Override
+    public String toString() {
+        return "ProcessRest{" + "pid=" + pid + ", name=" + name + ", priority=" + priority + ", characters=" + characters + ", charactersReplacement=" + charactersReplacement + '}';
+    }
+    
 }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import com.jfoenix.controls.JFXButton?>
 <?import com.jfoenix.controls.JFXCheckBox?>
 <?import com.jfoenix.controls.JFXListView?>
 <?import com.jfoenix.controls.JFXProgressBar?>
@@ -107,7 +108,7 @@
                   <Font name="Eras Medium ITC" size="18.0" />
                </font>
             </Label>
-            <JFXListView fx:id="listNewProcess" layoutX="10.0" layoutY="329.0" onMouseClicked="#showPopup" prefHeight="265.0" prefWidth="248.0" style="-fx-background-color: #F2F2F2; -fx-border-color: #FFFFFF;" />
+            <JFXListView fx:id="listNewProcess" layoutX="10.0" layoutY="329.0" onMouseClicked="#showPopup" prefHeight="210.0" prefWidth="248.0" style="-fx-background-color: #F2F2F2; -fx-border-color: #FFFFFF;" />
             <JFXTextField fx:id="charReplaced" alignment="CENTER" focusColor="#edb407" labelFloat="true" layoutX="138.0" layoutY="201.0" prefHeight="25.0" prefWidth="108.0" promptText="REPLACED" unFocusColor="BLACK">
                <font>
                   <Font name="Eras Bold ITC" size="12.0" />
@@ -123,6 +124,18 @@
                   <Font name="Eras Bold ITC" size="12.0" />
                </font>
             </JFXTextField>
+            <JFXButton buttonType="RAISED" layoutX="24.0" layoutY="550.0" onAction="#loadProcess" prefHeight="40.0" prefWidth="223.0" style="-fx-background-color: #EDB407; -fx-background-radius: 15;" text="Load" textAlignment="CENTER" textFill="WHITE">
+               <graphic>
+                  <ImageView fitHeight="30.0" fitWidth="43.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../images/icons8_To_Do_48px.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+               <font>
+                  <Font name="Century Gothic Bold" size="15.0" />
+               </font>
+            </JFXButton>
          </children>
       </Pane>
       <HBox layoutX="266.0" layoutY="123.0" prefHeight="91.0" prefWidth="894.0">
@@ -191,18 +204,18 @@
                <children>
                   <Pane prefHeight="99.0" prefWidth="894.0" style="-fx-background-color: #F2F2F2;">
                      <children>
-                        <JFXTextField fx:id="thinput" focusColor="#edb407" labelFloat="true" layoutX="380.0" layoutY="17.0" prefHeight="36.0" prefWidth="135.0" promptText="TH(milliseconds)">
+                        <JFXTextField fx:id="thinput" focusColor="#edb407" labelFloat="true" layoutX="380.0" layoutY="17.0" prefHeight="36.0" prefWidth="135.0" promptText="TT(milliseconds)">
                            <font>
                               <Font name="Eras Medium ITC" size="15.0" />
                            </font>
                         </JFXTextField>
                         <JFXProgressBar fx:id="progressProcessBar" layoutY="72.0" prefHeight="22.0" prefWidth="832.0" progress="0.0" />
-                        <Button layoutX="563.0" layoutY="23.0" mnemonicParsing="false" onAction="#startProcess" prefHeight="30.0" prefWidth="150.0" style="-fx-background-color: #12BC00; -fx-background-radius: 15;" text="Iniciar" textFill="WHITE">
+                        <Button fx:id="btnStart" disable="true" layoutX="563.0" layoutY="23.0" mnemonicParsing="false" onAction="#startProcess" prefHeight="30.0" prefWidth="150.0" style="-fx-background-color: #12BC00; -fx-background-radius: 15;" text="Iniciar" textFill="WHITE">
                            <font>
                               <Font name="Century Gothic Bold" size="13.0" />
                            </font>
                         </Button>
-                        <Button layoutX="730.0" layoutY="23.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="150.0" style="-fx-background-color: #FF0000; -fx-background-radius: 15;" text="Detener" textFill="WHITE">
+                        <Button fx:id="btnStop" disable="true" layoutX="730.0" layoutY="23.0" mnemonicParsing="false" onAction="#stopProcess" prefHeight="30.0" prefWidth="150.0" style="-fx-background-color: #FF0000; -fx-background-radius: 15;" text="Detener" textFill="WHITE">
                            <font>
                               <Font name="Century Gothic Bold" size="13.0" />
                            </font>
@@ -212,9 +225,9 @@
                               <Font name="Century Gothic Bold" size="14.0" />
                            </font>
                         </Label>
-                        <Label fx:id="progressStatus" layoutX="832.0" layoutY="70.0" prefHeight="25.0" prefWidth="58.0">
+                        <Label fx:id="progressStatus" alignment="CENTER" contentDisplay="CENTER" layoutX="832.0" layoutY="70.0" prefHeight="25.0" prefWidth="58.0" text="0%">
                            <font>
-                              <Font name="Century Gothic" size="15.0" />
+                              <Font name="Century Gothic Bold" size="15.0" />
                            </font>
                         </Label>
                         <JFXCheckBox fx:id="checkPriority" layoutX="14.0" layoutY="5.0" text="By Priority">
@@ -227,6 +240,11 @@
                               <Font name="Century Gothic Bold" size="14.0" />
                            </font>
                         </Label>
+                        <Button fx:id="btnContinue" layoutX="563.0" layoutY="23.0" mnemonicParsing="false" onAction="#continueProcess" prefHeight="30.0" prefWidth="150.0" style="-fx-background-color: #edb407; -fx-background-radius: 15;" text="Continue" textFill="WHITE" visible="false">
+                           <font>
+                              <Font name="Century Gothic Bold" size="13.0" />
+                           </font>
+                        </Button>
                      </children>
                   </Pane>
                   <TableView fx:id="tableProcess" prefHeight="435.0" prefWidth="883.0">
@@ -237,7 +255,7 @@
                         <TableColumn fx:id="burstResidueCol" prefWidth="86.0" text="Burst Residue" />
                         <TableColumn fx:id="priorityCol" prefWidth="106.0" text="Assigned Priority" />
                         <TableColumn fx:id="charactersCol" prefWidth="226.0" resizable="false" text="Characters" />
-                        <TableColumn fx:id="replacedCol" prefWidth="61.0" style="-fx-alignment: CENTER-RIGHT;" text="Replaced" />
+                        <TableColumn fx:id="replacedCol" prefWidth="61.0" style="-fx-alignment: CENTER;" text="Replaced" />
                         <TableColumn fx:id="stateProcessCol" prefWidth="120.0" text="State" />
                     </columns>
                   </TableView>

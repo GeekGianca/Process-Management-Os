@@ -10,11 +10,12 @@ package com.gksoftware.processmanagement.model;
  * @author Geek-Programmer
  */
 public class ProcessTable {
+
     private String pid;
     private String name;
-    private int burst;
+    private long burst;
     private int priority;
-    private int burstresidue;
+    private long burstresidue;
     private String characters;
     private char characterReplaced;
     private String state;
@@ -35,11 +36,11 @@ public class ProcessTable {
         this.name = name;
     }
 
-    public int getBurst() {
+    public long getBurst() {
         return burst;
     }
 
-    public void setBurst(int burst) {
+    public void setBurst(long burst) {
         this.burst = burst;
     }
 
@@ -51,11 +52,11 @@ public class ProcessTable {
         this.priority = priority;
     }
 
-    public int getBurstresidue() {
+    public long getBurstresidue() {
         return burstresidue;
     }
 
-    public void setBurstresidue(int burstresidue) {
+    public void setBurstresidue(long burstresidue) {
         this.burstresidue = burstresidue;
     }
 
@@ -96,5 +97,10 @@ public class ProcessTable {
         this.characterReplaced = characterReplaced;
         this.state = state;
     }
-    
+
+    @Override
+    public String toString() {
+        return "ProcessTable{\n" + "\t\tpid=" + pid + ",\n\t\tname=" + name + ",\n\t\tburst=" + burst + ",\n\t\tpriority=" + priority + ",\n\t\tburstresidue=" + burstresidue + ",\n\t\tcharacters=" + characters + ",\n\t\tcharacterReplaced=" + characterReplaced + ",\n\t\tstate=" + state + "\n" + '}';
+    }
+
 }
