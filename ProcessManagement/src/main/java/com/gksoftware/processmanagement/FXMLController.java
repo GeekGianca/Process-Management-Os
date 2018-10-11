@@ -14,8 +14,9 @@ import javafx.scene.layout.HBox;
 import com.gksoftware.processmanagement.model.Process;
 import com.gksoftware.processmanagement.model.ProcessTable;
 import com.gksoftware.processmanagement.queues.*;
-import com.gksoftware.processmanagement.services.LoadProcessServiceFacade;
-import com.gksoftware.processmanagement.services.ThreadProcess;
+import com.gksoftware.processmanagement.threads.ExecuteProcessServiceFacade;
+import com.gksoftware.processmanagement.threads.LoadProcessServiceFacade;
+import com.gksoftware.processmanagement.threads.ThreadProcess;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXCheckBox;
 import com.jfoenix.controls.JFXPopup;
@@ -50,8 +51,9 @@ public class FXMLController implements Initializable {
     private Queue queue = new Queue();
     private LoadProcessServiceFacade ptService;
     private Queue<ThreadProcess> readyProcess = new Queue<>();
-    private Thread threadProcess;
+    private Queue<ThreadProcess> executeProcess = new Queue<>();
     private ThreadProcess currentThread;
+    private ExecuteProcessServiceFacade epsf;
 
     @FXML
     private AnchorPane homeAnchor;
@@ -128,6 +130,10 @@ public class FXMLController implements Initializable {
 
     @FXML
     private Button btnContinue;
+    @FXML
+    private JFXTextField charReplacement;
+    @FXML
+    private Label lblExecute;
 
     @FXML
     private void showPopup(MouseEvent event) {
@@ -179,21 +185,10 @@ public class FXMLController implements Initializable {
         btnStart.setDisable(true);
         btnStop.setDisable(false);
         if (readyProcess.size() > 0) {
-            while (!readyProcess.isEmpty()) {
-                try {
-                    currentThread = (ThreadProcess)readyProcess.peek().getElement();
-                    currentThread.setProgress(progressProcessBar);
-                    currentThread.setLblPid(currentPid);
-                    currentThread.setLblName(currentNameProcess);
-                    currentThread.execute();
-                    currentThread.gettProcess().join();
-                    readyProcess.pop();
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(FXMLController.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }else{
-            
+            epsf = new ExecuteProcessServiceFacade(readyProcess, progressProcessBar, currentPid, currentNameProcess, observerTableProcess, tableProcess, lblExecute);
+            epsf.start();
+        } else {
+            System.out.println("Queue empty");
         }
     }
 
@@ -203,19 +198,23 @@ public class FXMLController implements Initializable {
         btnContinue.setVisible(true);
         btnContinue.setDisable(false);
         btnStop.setDisable(true);
+        System.out.println("Thread To Stop: "+epsf.getTp().getProcess().getPid());
+        epsf.getTp().suspend();
     }
 
     @FXML
     private void continueProcess(ActionEvent event) {
         btnContinue.setDisable(true);
         btnStop.setDisable(false);
+        System.out.println("Thread To Resume: "+epsf.getTp().getProcess().getPid());
+        epsf.getTp().resume();
     }
 
     @FXML
     private void loadProcess(ActionEvent event) {
         if (thinput.getText().matches("[0-9]*") && thinput.getText().length() > 0) {
             Common.thmillis = Long.parseLong(thinput.getText());
-            
+
             ptService = new LoadProcessServiceFacade(
                     observerTableProcess,
                     progressProcessBar,
@@ -229,7 +228,7 @@ public class FXMLController implements Initializable {
                     btnStart,
                     readyProcess
             );
-            
+
         } else {
             thinput.setFocusColor(Color.web("#d50000"));
             JFXSnackbar snackbar = new JFXSnackbar(homeAnchor);

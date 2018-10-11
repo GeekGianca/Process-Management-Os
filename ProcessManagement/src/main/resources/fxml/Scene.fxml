@@ -156,7 +156,7 @@
             </VBox>
             <VBox alignment="CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="140.0" prefWidth="223.0">
                <children>
-                  <Label text="0" textFill="#0cf014">
+                  <Label fx:id="lblExecute" text="0" textFill="#0cf014">
                      <font>
                         <Font name="Arial Black" size="27.0" />
                      </font>
