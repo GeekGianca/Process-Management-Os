@@ -13,6 +13,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.layout.HBox;
 import com.gksoftware.processmanagement.model.Process;
 import com.gksoftware.processmanagement.model.ProcessTable;
+import com.gksoftware.processmanagement.model.TableDeleteProcess;
 import com.gksoftware.processmanagement.queues.*;
 import com.gksoftware.processmanagement.threads.ExecuteProcessServiceFacade;
 import com.gksoftware.processmanagement.threads.LoadProcessServiceFacade;
@@ -22,6 +23,8 @@ import com.jfoenix.controls.JFXCheckBox;
 import com.jfoenix.controls.JFXPopup;
 import com.jfoenix.controls.JFXProgressBar;
 import com.jfoenix.controls.JFXSnackbar;
+import java.util.ArrayList;
+import java.util.List;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,6 +57,7 @@ public class FXMLController implements Initializable {
     private Queue<ThreadProcess> executeProcess = new Queue<>();
     private ThreadProcess currentThread;
     private ExecuteProcessServiceFacade epsf;
+    private List<Process> wsProcess = new ArrayList<>();
 
     @FXML
     private AnchorPane homeAnchor;
@@ -134,6 +138,78 @@ public class FXMLController implements Initializable {
     private JFXTextField charReplacement;
     @FXML
     private Label lblExecute;
+    @FXML
+    private Button btnAvailable;
+    @FXML
+    private Button btnExecuted;
+    @FXML
+    private Button btnDelete;
+    @FXML
+    private AnchorPane backgroundAnchor;
+    @FXML
+    private JFXTextField processInputDel;
+    @FXML
+    private JFXTextField charactersInputDel;
+    @FXML
+    private JFXTextField processInputDel11;
+    @FXML
+    private JFXTextField priorityInputDel;
+    @FXML
+    private JFXButton btnRestore;
+    @FXML
+    private TableColumn<TableDeleteProcess, String> pidDelCol;
+    @FXML
+    private TableColumn<TableDeleteProcess, String> processDelCol;
+    @FXML
+    private TableColumn<TableDeleteProcess, String> burstDelCol;
+    @FXML
+    private TableColumn<TableDeleteProcess, String> priorityDelCol;
+    @FXML
+    private TableColumn<TableDeleteProcess, String> charactersDelCol;
+    @FXML
+    private TableColumn<TableDeleteProcess, String> replacedDelCol;
+    @FXML
+    private TableColumn<TableDeleteProcess, String> stateDelCol;
+    @FXML
+    private TableColumn<TableDeleteProcess, String> datetimeDelCol;
+    @FXML
+    private AnchorPane deleteAnchor;
+    @FXML
+    private TableView<TableDeleteProcess> tableDelete;
+    private ObservableList<TableDeleteProcess> observerDeleteTable;
+    @FXML
+    private Label generalQuantum;
+    @FXML
+    private AnchorPane anchorExecuted;
+    @FXML
+    private JFXTextField totaltimeExecution;
+    @FXML
+    private TableView<?> tableExecuted;
+    @FXML
+    private TableColumn<?, ?> pidFinished;
+    @FXML
+    private TableColumn<?, ?> processFinished;
+    @FXML
+    private TableColumn<?, ?> burstFinished;
+    @FXML
+    private TableColumn<?, ?> priorityFinished;
+    @FXML
+    private TableColumn<?, ?> timeArrivalFinished;
+    @FXML
+    private TableColumn<?, ?> turnaroundFinished;
+    @FXML
+    private TableColumn<?, ?> endtimeFinished;
+
+    @FXML
+    private void handleActionEvent(ActionEvent event) {
+        if (event.getSource() == btnAvailable) {
+            homeAnchor.toFront();
+        } else if (event.getSource() == btnExecuted) {
+
+        } else if (event.getSource() == btnDelete) {
+            deleteAnchor.toFront();
+        }
+    }
 
     @FXML
     private void showPopup(MouseEvent event) {
@@ -141,6 +217,7 @@ public class FXMLController implements Initializable {
         if (event.getSource() != MouseButton.PRIMARY) {
             if (selected > -1) {
                 popupList.show(listNewProcess, JFXPopup.PopupVPosition.TOP, JFXPopup.PopupHPosition.LEFT, event.getX(), event.getY());
+                System.out.println(listNewProcess);
             }
         }
         listNewProcess.getSelectionModel().isSelected(-1);
@@ -163,6 +240,7 @@ public class FXMLController implements Initializable {
                     clear();
                     priorityQueue.push(process.getPriority(), process, process.getPid());
                     queue.push(process);
+                    wsProcess.add(process);
                 }
             } else {
                 alert = new Alert(Alert.AlertType.ERROR);
@@ -185,7 +263,7 @@ public class FXMLController implements Initializable {
         btnStart.setDisable(true);
         btnStop.setDisable(false);
         if (readyProcess.size() > 0) {
-            epsf = new ExecuteProcessServiceFacade(readyProcess, progressProcessBar, currentPid, currentNameProcess, observerTableProcess, tableProcess, lblExecute);
+            epsf = new ExecuteProcessServiceFacade(readyProcess, progressProcessBar, currentPid, currentNameProcess, observerTableProcess, lblExecute, progressStatus);
             epsf.start();
         } else {
             System.out.println("Queue empty");
@@ -198,7 +276,7 @@ public class FXMLController implements Initializable {
         btnContinue.setVisible(true);
         btnContinue.setDisable(false);
         btnStop.setDisable(true);
-        System.out.println("Thread To Stop: "+epsf.getTp().getProcess().getPid());
+        System.out.println("Thread To Stop: " + epsf.getTp().getProcess().getPid());
         epsf.getTp().suspend();
     }
 
@@ -206,7 +284,7 @@ public class FXMLController implements Initializable {
     private void continueProcess(ActionEvent event) {
         btnContinue.setDisable(true);
         btnStop.setDisable(false);
-        System.out.println("Thread To Resume: "+epsf.getTp().getProcess().getPid());
+        System.out.println("Thread To Resume: " + epsf.getTp().getProcess().getPid());
         epsf.getTp().resume();
     }
 
@@ -228,7 +306,8 @@ public class FXMLController implements Initializable {
                     btnStart,
                     readyProcess
             );
-
+            thinput.setDisable(true);
+            checkPriority.setDisable(true);
         } else {
             thinput.setFocusColor(Color.web("#d50000"));
             JFXSnackbar snackbar = new JFXSnackbar(homeAnchor);
@@ -252,6 +331,7 @@ public class FXMLController implements Initializable {
         initPopup();
         initTableProcess();
         loadAutomaticProcess();
+        initTableDelete();
     }
 
     private void clear() {
@@ -267,12 +347,15 @@ public class FXMLController implements Initializable {
         btn.setPadding(new Insets(10));
         btn.setOnMouseClicked((MouseEvent event) -> {
             try {
-                listNewProcess.getItems().remove(listNewProcess.getSelectionModel().getSelectedIndex());
+                int index = listNewProcess.getSelectionModel().getSelectedIndex();
+                listNewProcess.getItems().remove(index);
                 popupList.hide();
                 Common.processAvailable--;
                 Common.processEliminated++;
                 procAvailable.setText(String.valueOf(Common.processAvailable));
                 processEliminated.setText(String.valueOf(Common.processEliminated));
+                System.out.println(wsProcess.get(index).toString());
+                wsProcess.remove(index);
             } catch (Exception e) {
                 Logger.getLogger(FXMLController.class.getName()).log(Level.SEVERE, null, e);
             }
@@ -294,6 +377,20 @@ public class FXMLController implements Initializable {
         replacedCol.setCellValueFactory(new PropertyValueFactory<>("characterReplaced"));
         stateProcessCol.setCellValueFactory(new PropertyValueFactory<>("state"));
     }
+    
+    private void initTableDelete(){
+        observerDeleteTable = FXCollections.observableArrayList();
+        tableDelete.setItems(observerDeleteTable);
+        //Link to columns with binding
+        pidDelCol.setCellValueFactory(new PropertyValueFactory<>("pid"));
+        processDelCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+        burstDelCol.setCellValueFactory(new PropertyValueFactory<>("burst"));
+        priorityDelCol.setCellValueFactory(new PropertyValueFactory<>("priority"));
+        charactersDelCol.setCellValueFactory(new PropertyValueFactory<>("characters"));
+        replacedDelCol.setCellValueFactory(new PropertyValueFactory<>("charactersReplaced"));
+        stateDelCol.setCellValueFactory(new PropertyValueFactory<>("state"));
+        datetimeDelCol.setCellValueFactory(new PropertyValueFactory<>("datetime"));
+    }
 
     private void loadAutomaticProcess() {
         char[] letters = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'ñ', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
@@ -312,60 +409,3 @@ public class FXMLController implements Initializable {
     }
 
 }
-/*private Task initProcessTask() {
-        return new Task() {
-            @Override
-            protected Object call() throws Exception {
-                double pTotal = 100 / sizeSelected;
-                double processCounter = 0;
-                double rest = 0;
-                for (int i = 0; i < sizeSelected; i++) {
-                    Thread.sleep(Common.thmillis);
-                    Process pRuntime;
-                    if (checkPriority.isSelected()) {
-                        if (!pqueue.isEmpty()) {
-                            System.out.println("---->Priority: " + pqueue.peek().toString());
-                            pRuntime = pqueue.peek();
-                            observerTableProcess.add(new ProcessTable(pRuntime.getPid(), pRuntime.getName(), pRuntime.getBurst(), pRuntime.getPriority(), pRuntime.getBurst(), pRuntime.getCharacters(), pRuntime.getCharacterReplaced().charAt(0), "Waiting"));
-                            pqueue.poll();
-                            System.out.println(pRuntime.toString());
-                        }
-                    } else {
-                        if (!squeue.isEmpty()) {
-                            pRuntime = squeue.peek();
-                            System.out.println("---->Queue: " + squeue.peek().toString());
-                            observerTableProcess.add(new ProcessTable(pRuntime.getPid(), pRuntime.getName(), pRuntime.getBurst(), pRuntime.getPriority(), pRuntime.getBurst(), pRuntime.getCharacters(), pRuntime.getCharacterReplaced().charAt(0), "Waiting"));
-                            squeue.pop();
-                            System.out.println(pRuntime.toString());
-                        }
-
-                    }
-                    pRuntime = null;
-                    processCounter += pTotal;
-                    rest = 100 - processCounter;
-                    updateMessage(String.valueOf(processCounter + "%"));
-                    updateProgress(processCounter, 100);
-                }
-                updateProgress(rest + processCounter, 100);
-                updateMessage(String.valueOf(rest + processCounter + "%"));
-                int processCounterSize = observerTableProcess.size();
-                int counterTime = 0;
-                Thread.sleep(Common.thmillis);
-                updateProgress(0.0D, 100);
-                updateMessage(String.valueOf(0 + "%"));
-                //progressProcessBar.setProgress(0.0D);
-                while (counterTime < processCounterSize) {
-                    Thread.sleep(Common.thmillis);
-                    ProcessTable process = new ProcessTable();
-                    process = observerTableProcess.get(counterTime);
-                    process.setState("Running");
-                    observerTableProcess.set(counterTime, process);
-                    //observerTableProcess.add(process);
-                    System.out.println("Col: "+stateProcessCol.getCellData(counterTime));
-                    System.out.println("Position: "+counterTime);
-                    counterTime++;
-                }
-                return true;
-            }
-        };
-    }*/

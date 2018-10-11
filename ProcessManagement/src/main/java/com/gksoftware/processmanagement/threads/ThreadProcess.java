@@ -17,7 +17,6 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
-import javafx.scene.control.TableView;
 
 /**
  *
@@ -31,8 +30,8 @@ public class ThreadProcess implements Runnable {
     private Label lblPid;
     private Label lblName;
     private Label execute;
+    private Label progressLbl;
     private ObservableList<ProcessTable> bindingList;
-    private TableView<ProcessTable> bindigTable;
     private boolean isSuspend = false;
     private int counterTime;
     private long timeArrive;
@@ -46,13 +45,13 @@ public class ThreadProcess implements Runnable {
     public void setExecute(Label execute) {
         this.execute = execute;
     }
-    
+
     public void setBindingList(ObservableList<ProcessTable> bindingList) {
         this.bindingList = bindingList;
     }
 
-    public void setBindigTable(TableView<ProcessTable> bindigTable) {
-        this.bindigTable = bindigTable;
+    public void setProgressLbl(Label progressLbl) {
+        this.progressLbl = progressLbl;
     }
 
     public final double getProgressBar() {
@@ -122,20 +121,32 @@ public class ThreadProcess implements Runnable {
             pt.setState("Running");
             showLabels();
             double progressPercentage = 0;
-            if (process.getBurst() == 0) {
-                progressPercentage = 1;
+            if (process.getPriority() == 0) {
+                double realBusrt = (process.getBurst() == 0) ? 1 : process.getBurst();
+                progressPercentage = 100 / realBusrt;
             } else {
-                progressPercentage = 0.1 / process.getBurst();
+                if (process.getBurst() == 0 || process.getBurst() < 1) {
+                    progressPercentage = 100;
+                } else {
+                    progressPercentage = 100 / process.getBurst();
+                }
             }
-            double percent = 0;
             System.out.println(process.toString());
             while (isRunning && (counterTime < process.getBurst())) {
                 counterTime++;
+                setTimeArrive(getTimeArrive() + Common.thmillis);
+//                if (process.getBurst() > 0) {
+//                    process.setCurrentPositionReplaced(process.getCurrentPositionReplaced() + 1);
+//                    String newcharacters = changeCharacters(process.getCharacters(), process.getPositionsChange(process.getCurrentPositionReplaced()));
+//                    process.setCharacters(newcharacters);
+//                    pt.setCharacters(newcharacters);
+//                }
                 System.out.println("Running Service????");
                 process.setBurstResidue(process.getBurstResidue() - Common.thmillis);
                 pt.setBurstresidue(process.getBurstResidue());
                 bindingList.set(process.getPositionView(), pt);
-                setProgressBar(getProgressBar()+progressPercentage);
+                setProgressBar(getProgressBar() + progressPercentage);
+                showLabels();
                 Thread.sleep(Common.thmillis);
                 synchronized (this) {
                     while (isSuspend) {
@@ -143,21 +154,12 @@ public class ThreadProcess implements Runnable {
                         wait();
                     }
                 }
-//                if (process.getBurst() == 1) {
-//                    isRunning = false;
-//                    if (process.getBurstResidue() == 0) {
-//                        setterStatusProcessView(pt, "Finished");
-//                    } else {
-//                        setterStatusProcessView(pt, "Ready");
-//                    }
-//                } else {
-//                    
-//                }
                 if (process.getPriority() == 1 || process.getPriority() == 2) {
                     isRunning = false;
                     if (process.getBurstResidue() == 0) {
                         setterStatusProcessView(pt, "Finished");
-                        Common.processExecuted ++;
+                        process.setTimeArrival(timeArrive);
+                        Common.processExecuted++;
                     } else {
                         setterStatusProcessView(pt, "Ready");
                     }
@@ -165,27 +167,25 @@ public class ThreadProcess implements Runnable {
                     if (process.getBurstResidue() == 0) {
                         isRunning = false;
                         setterStatusProcessView(pt, "Finished");
-                        Common.processExecuted ++;
+                        process.setTimeArrival(timeArrive);
+                        Common.processExecuted++;
                     }
                 }
             }
-            setProgressBar(0);
             counterTime = -1;
 
         } catch (InterruptedException ex) {
             Logger.getLogger(ThreadProcess.class.getName()).log(Level.SEVERE, null, ex);
         }
+        System.out.println("End Task Process");
     }
 
     public synchronized void execute() {
-        if (tProcess == null) {
-            System.out.println("Executing Process");
-            tProcess = new Thread(this);
-            tProcess.start();
-            System.out.println(progressProperty().get());
-            System.out.println(progress);
-            progress.progressProperty().bind(progressBar);
-        }
+        System.out.println("Executing Process");
+        tProcess = new Thread(this);
+        tProcess.start();
+        System.out.println(progressProperty().get());
+
     }
 
     public void suspend() {
@@ -213,6 +213,7 @@ public class ThreadProcess implements Runnable {
 
     private void showLabels() {
         Platform.runLater(() -> {
+            progressLbl.setText(String.valueOf(getProgressBar() + "%"));
             lblName.setText(process.getName());
             lblPid.setText(process.getPid());
             execute.setText(String.valueOf(Common.processExecuted));

@@ -20,12 +20,21 @@ public class Process {
     private int burst;//This really is quantity of characters to replace
     private long burstTime;
     private long burstResidue;
-    private float timeArrival;
-    private float turnAround;
-    private float endtime;
+    private long timeArrival;
+    private long turnAround;
+    private long endtime;
     //
     private int positionView;
     private int positionsChange[];
+    private int currentPositionReplaced;
+
+    public int getCurrentPositionReplaced() {
+        return currentPositionReplaced;
+    }
+
+    public void setCurrentPositionReplaced(int currentPositionReplaced) {
+        this.currentPositionReplaced = currentPositionReplaced;
+    }
 
     public int getPositionView() {
         return positionView;
@@ -111,7 +120,7 @@ public class Process {
         return timeArrival;
     }
 
-    public void setTimeArrival(float timeArrival) {
+    public void setTimeArrival(long timeArrival) {
         this.timeArrival = timeArrival;
     }
 
@@ -119,7 +128,7 @@ public class Process {
         return turnAround;
     }
 
-    public void setTurnAround(float turnAround) {
+    public void setTurnAround(long turnAround) {
         this.turnAround = turnAround;
     }
 
@@ -127,14 +136,14 @@ public class Process {
         return endtime;
     }
 
-    public void setEndtime(float endtime) {
+    public void setEndtime(long endtime) {
         this.endtime = endtime;
     }
 
     public Process() {
     }
 
-    public Process(String pid, String name, int priority, String characters, String characterReplaced, int burst, int burstTime, int burstResidue, float timeArrival, float turnAround, float endtime) {
+    public Process(String pid, String name, int priority, String characters, String characterReplaced, int burst, int burstTime, int burstResidue, long timeArrival, long turnAround, long endtime) {
         this.pid = pid;
         this.name = name;
         this.priority = priority;
@@ -146,6 +155,7 @@ public class Process {
         this.timeArrival = timeArrival;
         this.turnAround = turnAround;
         this.endtime = endtime;
+        this.currentPositionReplaced = -1;
     }
 
     public void convertProcess(ProcessTable process) {

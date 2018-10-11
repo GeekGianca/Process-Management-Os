@@ -32,7 +32,7 @@ public class Common {
     public static int chartsAvailables;
     public static long thmillis;
     
-    public static final int QUANTUM = 5;
+    public static final int QUANTUM = 5*1000;
     public static final String REPLACEMENT_CHAR = "x";
 
     public static void loadRecentlyAddProcess(JFXListView<HBox> listView, Process process) {
