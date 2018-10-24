@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.gksoftware.processmanagement;
+package com.gksoftware.processmanagementso;
 
 import com.jfoenix.controls.JFXListView;
 
@@ -19,7 +19,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import com.gksoftware.processmanagement.model.Process;
+import com.gksoftware.processmanagementso.model.Process;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.scene.control.Alert;

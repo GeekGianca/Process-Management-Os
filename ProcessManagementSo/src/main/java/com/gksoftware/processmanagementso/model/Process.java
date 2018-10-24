@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.gksoftware.processmanagement.model;
+package com.gksoftware.processmanagementso.model;
 
-import com.gksoftware.processmanagement.Common;
+import com.gksoftware.processmanagementso.Common;
 
 /**
  * @author Geek-Programmer

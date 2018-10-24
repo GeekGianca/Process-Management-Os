@@ -3,18 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.gksoftware.processmanagement.services;
+package com.gksoftware.processmanagementso.services;
 
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
-import com.gksoftware.processmanagement.model.ProcessList;
+import com.gksoftware.processmanagementso.model.ProcessList;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * @author Geek-Programmer
  */
-@Component
 public class CallRestService {
     private ProcessList processList;
     

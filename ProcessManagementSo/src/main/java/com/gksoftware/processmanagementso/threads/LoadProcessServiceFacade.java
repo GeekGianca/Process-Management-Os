@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.gksoftware.processmanagement.threads;
+package com.gksoftware.processmanagementso.threads;
 
-import com.gksoftware.processmanagement.Common;
-import com.gksoftware.processmanagement.model.ProcessTable;
-import com.gksoftware.processmanagement.queues.PriorityQueue;
-import com.gksoftware.processmanagement.queues.Queue;
+import com.gksoftware.processmanagementso.Common;
+import com.gksoftware.processmanagementso.model.ProcessTable;
+import com.gksoftware.processmanagementso.queues.PriorityQueue;
+import com.gksoftware.processmanagementso.queues.Queue;
 import com.jfoenix.controls.JFXCheckBox;
 import com.jfoenix.controls.JFXProgressBar;
 import java.util.logging.Level;
@@ -20,7 +20,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 
-import com.gksoftware.processmanagement.model.Process;
+import com.gksoftware.processmanagementso.model.Process;
 /**
  *
  * @author Geek-Programmer
@@ -269,7 +269,6 @@ public class LoadProcessServiceFacade {
                     updateMessage(String.valueOf(progressPercentage + "-" + process.getName() + "-" + process.getPid()));
                     rest = (100 - progressPercentage);
                     stop();
-                    System.out.println("Pos List: "+counterTime);
                     counterTime++;
                 }
                 updateProgress(rest+progressPercentage, 100);

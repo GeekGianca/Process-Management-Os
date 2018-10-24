@@ -1,4 +1,4 @@
-package com.gksoftware.processmanagement;
+package com.gksoftware.processmanagementso;
 
 import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXTextField;
@@ -11,16 +11,15 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.layout.HBox;
-import com.gksoftware.processmanagement.model.Process;
-import com.gksoftware.processmanagement.model.ProcessComplete;
-import com.gksoftware.processmanagement.model.ProcessEntity;
-import com.gksoftware.processmanagement.model.ProcessTable;
-import com.gksoftware.processmanagement.model.TableDeleteProcess;
-import com.gksoftware.processmanagement.queues.*;
-import com.gksoftware.processmanagement.services.CallRestService;
-import com.gksoftware.processmanagement.threads.ExecuteProcessServiceFacade;
-import com.gksoftware.processmanagement.threads.LoadProcessServiceFacade;
-import com.gksoftware.processmanagement.threads.ThreadProcess;
+import com.gksoftware.processmanagementso.model.Process;
+import com.gksoftware.processmanagementso.model.ProcessComplete;
+import com.gksoftware.processmanagementso.model.ProcessTable;
+import com.gksoftware.processmanagementso.model.TableDeleteProcess;
+import com.gksoftware.processmanagementso.queues.*;
+import com.gksoftware.processmanagementso.services.CallRestService;
+import com.gksoftware.processmanagementso.threads.ExecuteProcessServiceFacade;
+import com.gksoftware.processmanagementso.threads.LoadProcessServiceFacade;
+import com.gksoftware.processmanagementso.threads.ThreadProcess;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXCheckBox;
 import com.jfoenix.controls.JFXComboBox;
@@ -28,10 +27,12 @@ import com.jfoenix.controls.JFXPopup;
 import com.jfoenix.controls.JFXProgressBar;
 import com.jfoenix.controls.JFXSnackbar;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -50,9 +51,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import org.springframework.stereotype.Component;
 
-@Component
 public class FXMLController implements Initializable {
 
     private Process process;
@@ -64,6 +63,7 @@ public class FXMLController implements Initializable {
     private ExecuteProcessServiceFacade epsf;
     private List<Process> wsProcess = new ArrayList<>();
     private CallRestService rest = new CallRestService();
+    private int indexSelected;
 
     @FXML
     private AnchorPane homeAnchor;
@@ -76,23 +76,17 @@ public class FXMLController implements Initializable {
 
     @FXML
     private JFXTextField thinput;
-
     @FXML
     private JFXCheckBox checkPriority;
-
     @FXML
     private JFXProgressBar progressProcessBar;
-
     @FXML
     private Button btnStart;
-
     @FXML
     private Button btnStop;
-
     @FXML
     private JFXListView<HBox> listNewProcess;
     private JFXPopup popupList = new JFXPopup();
-
     @FXML
     private Label progressStatus;
     @FXML
@@ -135,16 +129,6 @@ public class FXMLController implements Initializable {
     private Button btnDelete;
     @FXML
     private AnchorPane backgroundAnchor;
-    @FXML
-    private JFXTextField processInputDel;
-    @FXML
-    private JFXTextField charactersInputDel;
-    @FXML
-    private JFXTextField processInputDel11;
-    @FXML
-    private JFXTextField priorityInputDel;
-    @FXML
-    private JFXButton btnRestore;
     @FXML
     private TableColumn<TableDeleteProcess, String> pidDelCol;
     @FXML
@@ -194,13 +178,21 @@ public class FXMLController implements Initializable {
     @FXML
     private AnchorPane anchorCharts;
     @FXML
-    private LineChart<?, ?> chartProcess;
+    private LineChart<Number, String> chartProcess;
     @FXML
     private NumberAxis y;
     @FXML
     private CategoryAxis x;
     @FXML
     private JFXComboBox<String> processList;
+    @FXML
+    private Button loadFromws;
+    @FXML
+    private Label lblws;
+    @FXML
+    private JFXProgressBar progressLoad;
+    @FXML
+    private JFXButton btnLoad;
 
     @FXML
     private void handleActionEvent(ActionEvent event) {
@@ -219,7 +211,6 @@ public class FXMLController implements Initializable {
         if (event.getSource() != MouseButton.PRIMARY) {
             if (selected > -1) {
                 popupList.show(listNewProcess, JFXPopup.PopupVPosition.TOP, JFXPopup.PopupHPosition.LEFT, event.getX(), event.getY());
-                System.out.println(listNewProcess);
             }
         }
         listNewProcess.getSelectionModel().isSelected(-1);
@@ -227,35 +218,54 @@ public class FXMLController implements Initializable {
 
     @FXML
     private void createNewProcess(ActionEvent event) {
-        try {
-            rest.callrestService(processList.getSelectionModel().getSelectedIndex()+1);
-            rest.getProcessList().getProcessList().stream().map((entity) -> {
-                process = Common.convertToProcess(entity.getPid(), entity.getName(), entity.getPriority(), entity.getCharactersReplaced(), entity.getCharacters());
-                return entity;
-            }).forEachOrdered((item) -> {
-                Common.QUANTUM = item.getQuantum();
-                System.out.println(item.toString());
-                if (process == null) {
-                    alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Error Input");
-                    alert.setContentText("Check the entry of each text box");
-                    alert.show();
+        progressLoad.setVisible(true);
+        observerTableProcess.clear();
+        Thread t = new Thread(() -> {
+            try {
+                if (processList.getSelectionModel().getSelectedIndex() > -1) {
+                    indexSelected = processList.getSelectionModel().getSelectedIndex();
+                    System.out.println(indexSelected+" Index");
+                    loadFromws.setDisable(true);
+                    int idprocess = Integer.parseInt(String.valueOf(processList.getSelectionModel().getSelectedItem().charAt(processList.getItems().get(indexSelected).length()-1)));
+                    rest.callrestService(idprocess);
+                    rest.getProcessList().getProcessList().stream().map((entity) -> {
+                        process = Common.convertToProcess(entity.getPid(), entity.getName(), entity.getPriority(), entity.getCharactersReplaced(), entity.getCharacters());
+                        return entity;
+                    }).forEachOrdered((item) -> {
+                        Common.QUANTUM = item.getQuantum();
+                        System.out.println(item.toString());
+                        Platform.runLater(() -> {
+                            Common.processAvailable++;
+                            procAvailable.setText(String.valueOf(Common.processAvailable));
+                            Common.loadRecentlyAddProcess(listNewProcess, process);
+                        });
+                        priorityQueue.push(process.getPriority(), process, process.getPid());
+                        queue.push(process);
+                        wsProcess.add(process);
+                        try {
+                            Thread.sleep(600);
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(FXMLController.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    });
                 } else {
-                    Common.processAvailable++;
-                    procAvailable.setText(String.valueOf(Common.processAvailable));
-                    Common.loadRecentlyAddProcess(listNewProcess, process);
-                    priorityQueue.push(process.getPriority(), process, process.getPid());
-                    queue.push(process);
-                    wsProcess.add(process);
+                    Alert alertD = new Alert(Alert.AlertType.ERROR);
+                    alertD.setContentText("You must select an option");
+                    alertD.show();
                 }
-            });
+                Platform.runLater(() -> {
+                    btnLoad.setDisable(false);
+                    progressLoad.setVisible(false);
+                });
+            } catch (NumberFormatException e) {
+                alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error Input");
+                alert.setContentText("Check the entry of each text box");
+                alert.show();
+            }
+        });
+        t.start();
 
-        } catch (NumberFormatException e) {
-            alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error Input");
-            alert.setContentText("Check the entry of each text box");
-            alert.show();
-        }
     }
 
     @FXML
@@ -276,7 +286,9 @@ public class FXMLController implements Initializable {
                     observableComplete,
                     chartProcess
             );
+            epsf.setAvailableCharts(lblAvailableCharts);
             epsf.start();
+            btnLoad.setDisable(true);
         } else {
             System.out.println("Queue empty");
         }
@@ -288,24 +300,21 @@ public class FXMLController implements Initializable {
         btnContinue.setVisible(true);
         btnContinue.setDisable(false);
         btnStop.setDisable(true);
-        System.out.println("Thread To Stop: " + epsf.getTp().getProcess().getPid());
         epsf.getTp().suspend();
     }
 
     @FXML
     private void continueProcess(ActionEvent event) {
+        btnContinue.setVisible(false);
         btnContinue.setDisable(true);
         btnStop.setDisable(false);
-        System.out.println("Thread To Resume: " + epsf.getTp().getProcess().getPid());
         epsf.getTp().resume();
     }
 
     @FXML
     private void loadProcess(ActionEvent event) {
         if (thinput.getText().matches("[0-9]*") && thinput.getText().length() > 0) {
-
             Common.thmillis = Long.parseLong(thinput.getText());
-
             ptService = new LoadProcessServiceFacade(
                     observerTableProcess,
                     progressProcessBar,
@@ -335,6 +344,7 @@ public class FXMLController implements Initializable {
         rest.getSimulations().forEach(c
                 -> processList.getItems().add(c)
         );
+        lblws.setText(String.valueOf(processList.getItems().size()));
         thinput.textProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
             if (!newValue.equals("")) {
                 thinput.setFocusColor(Color.web("#edb407"));
@@ -342,7 +352,26 @@ public class FXMLController implements Initializable {
         });
 
         lblAvailableCharts.setOnMouseClicked((MouseEvent event) -> {
-            anchorCharts.toFront();
+            if (!lblAvailableCharts.getText().equals("0")) {
+                anchorCharts.toFront();
+            }
+        });
+        
+        x.setLabel("Process");
+        y.setLabel("TurnAround");
+        
+        lblAvailableCharts.textProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
+            processList.getItems().remove(indexSelected);
+            loadFromws.setDisable(false);
+            btnStart.setDisable(true);
+            btnStop.setDisable(true);
+            thinput.setText("");
+            thinput.setDisable(false);
+            lblws.setText(String.valueOf(Integer.parseInt(lblws.getText()) - 1));
+            Common.processAvailable = 0;
+            checkPriority.setDisable(false);
+            progressProcessBar.progressProperty().unbind();
+            generalQuantum.setText(generalQuantum.getText().substring(0, generalQuantum.getText().length()-1));
         });
 
         initPopup();
@@ -367,6 +396,15 @@ public class FXMLController implements Initializable {
                 procAvailable.setText(String.valueOf(Common.processAvailable));
                 processEliminated.setText(String.valueOf(Common.processEliminated));
                 System.out.println(wsProcess.get(index).toString());
+                observerDeleteTable.add(new TableDeleteProcess(
+                        wsProcess.get(index).getPid(), 
+                        wsProcess.get(index).getName(), 
+                        wsProcess.get(index).getBurst(), 
+                        wsProcess.get(index).getPriority(), 
+                        wsProcess.get(index).getCharacters(), 
+                        wsProcess.get(index).getCharacterReplaced(), 
+                        "Delete", 
+                        new Date().toString()));
                 wsProcess.remove(index);
 
             } catch (Exception e) {

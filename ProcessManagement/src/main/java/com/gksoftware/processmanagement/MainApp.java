@@ -1,5 +1,9 @@
 package com.gksoftware.processmanagement;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 import javafx.application.Application;
 
 import static javafx.application.Application.launch;
@@ -16,6 +20,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 @SpringBootApplication
 public class MainApp extends Application {
+
     private ConfigurableApplicationContext springContext;
     private Parent root;
 
@@ -56,6 +61,15 @@ public class MainApp extends Application {
      */
     public static void main(String[] args) {
         launch(args);
+
+    }
+
+    private static HashMap<String, String> getQuoteFromHTTP() {
+        HashMap<String, String> map = new HashMap<>();
+        map.put("process", "Process One");
+        map.put("state", "Running");
+        map.put("quantum", "5");
+        return map;
     }
 
     @Override
@@ -70,7 +84,6 @@ public class MainApp extends Application {
     public void stop() throws Exception {
         springContext.close();
     }
-
 
 }
 /*
@@ -121,9 +134,9 @@ public class MainApp extends Application {
      * support. NetBeans ignores main().
      *
      * @param args the command line arguments
-     */
-/*
+ */
+ /*
     public static void main(String[] args) {
         Application.launch(args);
     }
-*/
+ */

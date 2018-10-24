@@ -3,18 +3,20 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.gksoftware.processmanagement.threads;
+package com.gksoftware.processmanagementso.threads;
 
-import com.gksoftware.processmanagement.Common;
-import static com.gksoftware.processmanagement.Common.REPLACEMENT_CHAR;
-import com.gksoftware.processmanagement.model.Process;
-import com.gksoftware.processmanagement.model.ProcessTable;
+import com.gksoftware.processmanagementso.Common;
+import static com.gksoftware.processmanagementso.Common.REPLACEMENT_CHAR;
+import com.gksoftware.processmanagementso.model.Process;
+import com.gksoftware.processmanagementso.model.ProcessTable;
 import com.jfoenix.controls.JFXProgressBar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
 
@@ -56,14 +58,14 @@ public class ThreadProcess implements Runnable {
         this.progressLbl = progressLbl;
     }
 
-    public final double getProgressBar() {
+    public double getProgressBar() {
         if (progressBar != null) {
             return progressBar.get();
         }
         return 0;
     }
 
-    public final void setProgressBar(double progressBar) {
+    public void setProgressBar(double progressBar) {
         this.progressBar.set(progressBar);
     }
 
@@ -132,26 +134,15 @@ public class ThreadProcess implements Runnable {
             showLabels();
             while (isRunning && (counterTime != Common.QUANTUM)) {
                 if (process.getBurstResidue() > 0) {
-                    String newcharacters = changeCharacters(process.getCharacters(), process.getPositionsChange(process.getCurrentPositionReplaced()) + 1);
-                    process.setCharacters(newcharacters);
-                    pt.setCharacters(newcharacters);
-                    process.setCurrentPositionReplaced(process.getCurrentPositionReplaced() + 1);
-                    process.setBurstResidue(process.getBurstResidue() - 1);
-                    pt.setBurstresidue(process.getBurstResidue());
-                    bindingList.set(process.getPositionView(), pt);
-                    double valueBar = 100 / process.getBurst();
-                    double percentageBar = 100 - (valueBar*process.getBurstResidue());
-                    setProgressBar(percentageBar);
+                    executeTask(pt);
                     showLabels();
-                    System.out.println("Burst Residue: " + process.getBurstResidue());
                     //Set turnAround
-                    if (process.getBurstResidue() == 0) {//No tiene mas vueltas termina la ejecucion
-                        setTimeArrive(getTimeArrive()+1);
+                    if (process.getBurstResidue() == 0) {//no more residue end task
+                        setTimeArrive(getTimeArrive() + 1);
                         isRunning = false;
                         setterStatusProcessView(pt, "Finished");
                         process.setTimeArrival(getTimeArrive());
-                        
-                        long endTimeProcess = (Common.QUANTUM * process.getCicle());
+                        long endTimeProcess = (Common.QUANTUM * process.getCicle() * 1000);
                         process.setEndtime(endTimeProcess);
                         process.setTurnAround(process.getEndtime() - process.getTimeArrival());
                         Common.processExecuted++;
@@ -173,11 +164,11 @@ public class ThreadProcess implements Runnable {
                         }
                     }
                 } else {
-                    setTimeArrive(getTimeArrive()+1);
+                    setTimeArrive(getTimeArrive() + 1);
                     isRunning = false;
                     setterStatusProcessView(pt, "Finished");
                     process.setTimeArrival(getTimeArrive());
-                    long endTimeProcess = (Common.QUANTUM * process.getCicle()*1000);
+                    long endTimeProcess = (Common.QUANTUM * process.getCicle() * 1000);
                     process.setEndtime(endTimeProcess);
                     process.setTurnAround(process.getEndtime() - process.getTimeArrival());
                     Common.processExecuted++;
@@ -191,7 +182,7 @@ public class ThreadProcess implements Runnable {
                 counterTime++;
                 System.out.println("Burst: ------>" + counterTime);
                 Thread.sleep(Common.thmillis);
-                setTimeEnded(getTimeEnded()+1);
+                setTimeEnded(getTimeEnded() + 1);
             }
             counterTime = 0;
             System.out.println("End Task Process");
@@ -200,6 +191,7 @@ public class ThreadProcess implements Runnable {
                 lblName.setText("");
                 lblPid.setText("");
                 setProgressBar(0);
+                progress.progressProperty().unbind();
             });
 
         } catch (InterruptedException ex) {
@@ -212,10 +204,8 @@ public class ThreadProcess implements Runnable {
         System.out.println("Executing Process");
         tProcess = new Thread(this);
         tProcess.start();
-        progressBar.set(0.0);
+        progressBar.set(0.0D);
         progress.progressProperty().bind(progressProperty());
-        System.out.println(progressProperty().get());
-
     }
 
     public void suspend() {
@@ -249,6 +239,21 @@ public class ThreadProcess implements Runnable {
             lblName.setText(process.getName());
             lblPid.setText(process.getPid());
             execute.setText(String.valueOf(Common.processExecuted));
+            progressBar.set(getProgressBar());
         });
+    }
+
+    private void executeTask(ProcessTable pt) {
+        String newcharacters = changeCharacters(process.getCharacters(), process.getPositionsChange(process.getCurrentPositionReplaced()) + 1);
+        process.setCharacters(newcharacters);
+        pt.setCharacters(newcharacters);
+        process.setCurrentPositionReplaced(process.getCurrentPositionReplaced() + 1);
+        process.setBurstResidue(process.getBurstResidue() - 1);
+        pt.setBurstresidue(process.getBurstResidue());
+        bindingList.set(process.getPositionView(), pt);
+        double valueBar = 100 / process.getBurst();
+        double percentageBar = 100 - (valueBar * process.getBurstResidue());
+        System.out.println("Progress: " + percentageBar);
+        setProgressBar(percentageBar);
     }
 }

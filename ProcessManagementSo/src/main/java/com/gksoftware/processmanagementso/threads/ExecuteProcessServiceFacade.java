@@ -3,12 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.gksoftware.processmanagement.threads;
+package com.gksoftware.processmanagementso.threads;
 
-import com.gksoftware.processmanagement.Common;
-import com.gksoftware.processmanagement.model.ProcessComplete;
-import com.gksoftware.processmanagement.model.ProcessTable;
-import com.gksoftware.processmanagement.queues.Queue;
+import com.gksoftware.processmanagementso.model.ProcessComplete;
+import com.gksoftware.processmanagementso.model.ProcessTable;
+import com.gksoftware.processmanagementso.queues.Queue;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXProgressBar;
 import java.util.logging.Level;
@@ -39,8 +38,9 @@ public class ExecuteProcessServiceFacade implements Runnable {
     private ObservableList<ProcessComplete> observableComplete;
     private Label execute;
     private Label progresslbl;
+    private Label availableCharts;
     private long timeArrival;
-    private LineChart<?, ?> chartProcess;
+    private LineChart<Number, String> chartProcess;
     private XYChart.Series series;
 
     public ExecuteProcessServiceFacade(
@@ -53,7 +53,7 @@ public class ExecuteProcessServiceFacade implements Runnable {
             Label progressLbl,
             Button btnStart,
             ObservableList<ProcessComplete> observableComplete,
-            LineChart<?, ?> chartProcess) {
+            LineChart<Number, String> chartProcess) {
         this.queue = queue;
         this.progress = progress;
         this.lblName = lblName;
@@ -66,6 +66,10 @@ public class ExecuteProcessServiceFacade implements Runnable {
         this.observableComplete = observableComplete;
         this.chartProcess = chartProcess;
         this.series = new XYChart.Series();
+    }
+
+    public void setAvailableCharts(Label availableCharts) {
+        this.availableCharts = availableCharts;
     }
 
     public void setBtnStart(JFXButton btnStart) {
@@ -88,7 +92,6 @@ public class ExecuteProcessServiceFacade implements Runnable {
     public void run() {
         while (!queue.isEmpty()) {
             try {
-                Common.start = System.nanoTime();
                 tp = queue.peek().getElement();
                 tp.setBindingList(bindingList);
                 tp.setLblName(lblName);
@@ -107,12 +110,11 @@ public class ExecuteProcessServiceFacade implements Runnable {
                     ProcessComplete pc = new ProcessComplete();
                     pc.convertToProcessEnd(tp.getProcess());
                     observableComplete.add(pc);
-                    series.getData().add(new XYChart.Data(pc.getName(), pc.getTurnAround()));
+                    series.getData().add(new XYChart.Data<>(pc.getName() + "", pc.getTurnAround()));
                     queue.pop();
                 }
                 synchronized (this) {
                     while (isSuspend) {
-                        System.out.println("Synchronize Suspend...");
                         wait();
                     }
                 }
@@ -126,20 +128,17 @@ public class ExecuteProcessServiceFacade implements Runnable {
             lblPid.setText("");
             btnStart.setDisable(false);
             btnStart.setVisible(true);
-            chartProcess.getData().addAll(series);
+            chartProcess.getData().add(series);
+            availableCharts.setText(String.valueOf(Integer.parseInt(availableCharts.getText()) + 1));
         });
     }
 
     public synchronized void start() {
-        System.out.println("Starting With inner");
-        if (thread == null) {
-            thread = new Thread(this);
-            thread.start();
-        }
+        thread = new Thread(this);
+        thread.start();
     }
 
     public void suspend() {
-        System.out.println("Suspend..." + isSuspend);
         isSuspend = true;
         tp.suspend();
     }
