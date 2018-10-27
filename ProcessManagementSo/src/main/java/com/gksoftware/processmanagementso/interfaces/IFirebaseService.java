@@ -5,17 +5,18 @@
  */
 package com.gksoftware.processmanagementso.interfaces;
 
-import java.util.HashMap;
-
-import com.gksoftware.processmanagementso.model.Process;
-import com.gksoftware.processmanagementso.model.ProcessComplete;
 
 /**
  *
  * @author Geek-Programmer
  */
 public interface IFirebaseService {
-    void setQuoteFromClassAvailable(Process process, String listName);
-    void setQuoteFromClassExecuted(ProcessComplete processComplete);
-    HashMap<String, String> getQuoteFromHTTP();
+//    void setQuoteFromClassAvailable(Process process, String listName);
+//    void setQuoteFromClassExecuted(ProcessComplete processComplete);
+//    HashMap<String, String> getQuoteFromHTTP();
+    void retrieveData();
+    boolean updateData();
+    void onChildChanged();
+    void onChildAdded();
+    void onChildRemoved();
 }

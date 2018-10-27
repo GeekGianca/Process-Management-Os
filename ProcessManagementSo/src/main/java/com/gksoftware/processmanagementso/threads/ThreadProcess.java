@@ -5,7 +5,6 @@
  */
 package com.gksoftware.processmanagementso.threads;
 
-import com.gksoftware.processmanagementso.Common;
 import static com.gksoftware.processmanagementso.Common.REPLACEMENT_CHAR;
 import com.gksoftware.processmanagementso.model.Process;
 import com.gksoftware.processmanagementso.model.ProcessTable;
@@ -15,10 +14,10 @@ import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
+import com.gksoftware.processmanagementso.Common;
+import com.gksoftware.processmanagementso.model.UpdateProcess;
 
 /**
  *
@@ -228,6 +227,9 @@ public class ThreadProcess implements Runnable {
     }
 
     private void setterStatusProcessView(ProcessTable pt, String state) {
+        Common.updProcess = new UpdateProcess(process.getSid(), process.getPid(), state);
+        System.out.println(Common.updProcess.toString());
+        Common.request.executeRequest(Common.updProcess.toString());
         pt.setState(state);
         bindingList.set(process.getPositionView(), pt);
         showLabels();

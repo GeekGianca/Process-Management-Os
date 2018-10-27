@@ -16,16 +16,17 @@ import org.springframework.web.client.RestTemplate;
 public class CallRestService {
     private ProcessList processList;
     
-    public void callrestService(int idprocess) {
+    public boolean callrestService(int idprocess) {
         RestTemplate restTemplate = new RestTemplate();
         processList = restTemplate.getForObject("http://api-cpu.herokuapp.com/api/process/simulation?id="+idprocess, ProcessList.class);        
+        return processList.getProcessList() != null;
     }
     
     public List<String> getSimulations(){
         List<String> list = new ArrayList<>();
         RestTemplate restTemplate = new RestTemplate();
         int count = restTemplate.getForObject("https://api-cpu-simulator.firebaseio.com/api/max_simulation.json", Integer.class);
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < count-1; i++) {
             list.add(String.format("Simulation %s", i+1));
         }
         return list;

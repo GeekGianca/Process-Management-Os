@@ -20,6 +20,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import com.gksoftware.processmanagementso.model.Process;
+import com.gksoftware.processmanagementso.model.ProcessEntity;
+import com.gksoftware.processmanagementso.model.UpdateProcess;
+import com.gksoftware.processmanagementso.services.SingletonRequest;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.scene.control.Alert;
@@ -28,6 +31,7 @@ import javafx.scene.control.Alert;
  * @author Geek-Programmer
  */
 public class Common {
+
     public static int processAvailable;
     public static int processExecuted;
     public static int wsAvailable;
@@ -37,7 +41,9 @@ public class Common {
     public static long start;
     public static long end;
     public static List<Process> serviceListTime = new ArrayList<>();
-    
+    public static SingletonRequest request = SingletonRequest.getInstance();
+    public static UpdateProcess updProcess;
+
     public static int QUANTUM = 5;
     public static final String REPLACEMENT_CHAR = "x";
 
@@ -56,7 +62,7 @@ public class Common {
             lbl3.setFont(new Font("Century Gothic", 18));
             lbl3.setStyle("-fx-font-family: Regular");
             lbl3.setTextFill(Color.web("#000000"));
-            ImageView iv = new ImageView(new Image(new FileInputStream("C:/Users/Gianc/Documents/JavaProjects/ProcessManagement/ProcessManagementOs/ProcessManagement/src/main/resources/images/icons8_Server_48px.png")));
+            ImageView iv = new ImageView(new Image(new FileInputStream("src/main/resources/images/icons8_Server_48px.png")));
             iv.setFitWidth(20);
             iv.setFitHeight(30);
             hboxContainer.getChildren().add(iv);
@@ -72,25 +78,22 @@ public class Common {
         }
     }
 
-    public static Process convertToProcess(String pid, String processName, int priority, String charReplaced, String characters) {
+    public static Process convertToProcess(ProcessEntity entity) {
         Process process = null;
-        if (!pid.isEmpty() && !processName.isEmpty() && priority > -1 && !charReplaced.isEmpty() && !characters.isEmpty()) {
-            process = new Process();
-            process.setPid(pid);
-            process.setName(processName);
-            process.setPriority(priority);
-            process.setCharacters(characters);
-            process.setCharacterReplaced(String.valueOf(charReplaced));
-        }
+        process = new Process();
+        process.setPid(entity.getPid());
+        process.setName(entity.getName());
+        process.setPriority(entity.getPriority());
+        process.setCharacters(entity.getCharacters());
+        process.setCharacterReplaced(entity.getCharactersReplaced());
+        process.setSid(entity.getSimulationProcess());
         return process;
     }
-    
-    public static Alert showAlert(String message, Alert.AlertType type){
+
+    public static Alert showAlert(String message, Alert.AlertType type) {
         Alert alert = new Alert(type);
         alert.setHeaderText(message);
         return alert;
     }
-    
-    
 
 }

@@ -19,6 +19,15 @@ public class ProcessTable {
     private String characters;
     private char characterReplaced;
     private String state;
+    private String sid;
+
+    public String getSid() {
+        return sid;
+    }
+
+    public void setSid(String sid) {
+        this.sid = sid;
+    }
 
     public String getPid() {
         return pid;
@@ -87,7 +96,7 @@ public class ProcessTable {
     public ProcessTable() {
     }
 
-    public ProcessTable(String pid, String name, int burst, int priority, int burstresidue, String characters, char characterReplaced, String state) {
+    public ProcessTable(String pid, String name, int burst, int priority, int burstresidue, String characters, char characterReplaced, String state, String sid) {
         this.pid = pid;
         this.name = name;
         this.burst = burst;
@@ -96,6 +105,7 @@ public class ProcessTable {
         this.characters = characters;
         this.characterReplaced = characterReplaced;
         this.state = state;
+        this.sid = sid;
     }
 
     @Override

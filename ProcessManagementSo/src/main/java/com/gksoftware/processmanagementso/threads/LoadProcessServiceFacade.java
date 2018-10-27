@@ -221,14 +221,14 @@ public class LoadProcessServiceFacade {
                     if (checkForm.isSelected()) {
                         if (!priorityQueue.isEmpty()) {
                             pRuntime = (Process) priorityQueue.peek().getElement();
-                            bindingList.add(new ProcessTable(pRuntime.getPid(), pRuntime.getName(), pRuntime.getBurst(), pRuntime.getPriority(), pRuntime.getBurst(), pRuntime.getCharacters(), pRuntime.getCharacterReplaced().charAt(0), "Waiting"));
+                            bindingList.add(new ProcessTable(pRuntime.getPid(), pRuntime.getName(), pRuntime.getBurst(), pRuntime.getPriority(), pRuntime.getBurst(), pRuntime.getCharacters(), pRuntime.getCharacterReplaced().charAt(0), "Waiting", pRuntime.getSid()));
                             priorityQueue.pop();
                             System.out.println(pRuntime.toString());
                         }
                     } else {
                         if (!queue.isEmpty()) {
                             pRuntime = (Process) queue.peek().getElement();
-                            bindingList.add(new ProcessTable(pRuntime.getPid(), pRuntime.getName(), pRuntime.getBurst(), pRuntime.getPriority(), pRuntime.getBurst(), pRuntime.getCharacters(), pRuntime.getCharacterReplaced().charAt(0), "Waiting"));
+                            bindingList.add(new ProcessTable(pRuntime.getPid(), pRuntime.getName(), pRuntime.getBurst(), pRuntime.getPriority(), pRuntime.getBurst(), pRuntime.getCharacters(), pRuntime.getCharacterReplaced().charAt(0), "Waiting", pRuntime.getSid()));
                             queue.pop();
                             System.out.println(pRuntime.toString());
                         }

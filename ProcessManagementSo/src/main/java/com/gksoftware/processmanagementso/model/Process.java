@@ -15,6 +15,7 @@ public class Process {
     private String pid;
     private String name;
     private int priority;
+    private String sid;
     private String characters;
     private String characterReplaced;
     private int burst;//This really is quantity of characters to replace
@@ -29,6 +30,14 @@ public class Process {
     private int positionView;
     private int positionsChange[];
     private int currentPositionReplaced;
+
+    public String getSid() {
+        return sid;
+    }
+
+    public void setSid(String sid) {
+        this.sid = sid;
+    }
 
     public long getServiceTime() {
         return serviceTime;
@@ -185,6 +194,7 @@ public class Process {
         this.setPriority(process.getPriority());
         this.setCharacters(process.getCharacters());
         this.setCharacterReplaced(String.valueOf(process.getCharacterReplaced()));
+        this.setSid(process.getSid());
         System.out.println("Character Replacement: " + getCharacters());
         System.out.println("Character Replaced: " + getCharacterReplaced());
         getBurstByProcess();
@@ -255,6 +265,7 @@ public class Process {
                 + "\t<turnAround>" + turnAround + "</turnAround>\n"
                 + "\t<endTime>" + endtime + "</endTime>\n"
                 + "\t<cicle>" + cicle + "</cicle>\n"
+                + "\t<simulation_id>" + sid + "</simulation_id>\n"
                 + "</Process>\n\n";
     }
 

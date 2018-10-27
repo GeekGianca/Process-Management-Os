@@ -224,39 +224,50 @@ public class FXMLController implements Initializable {
             try {
                 if (processList.getSelectionModel().getSelectedIndex() > -1) {
                     indexSelected = processList.getSelectionModel().getSelectedIndex();
-                    System.out.println(indexSelected+" Index");
+                    System.out.println(indexSelected + " Index");
                     loadFromws.setDisable(true);
-                    int idprocess = Integer.parseInt(String.valueOf(processList.getSelectionModel().getSelectedItem().charAt(processList.getItems().get(indexSelected).length()-1)));
-                    rest.callrestService(idprocess);
-                    rest.getProcessList().getProcessList().stream().map((entity) -> {
-                        process = Common.convertToProcess(entity.getPid(), entity.getName(), entity.getPriority(), entity.getCharactersReplaced(), entity.getCharacters());
-                        return entity;
-                    }).forEachOrdered((item) -> {
-                        Common.QUANTUM = item.getQuantum();
-                        System.out.println(item.toString());
-                        Platform.runLater(() -> {
-                            Common.processAvailable++;
-                            procAvailable.setText(String.valueOf(Common.processAvailable));
-                            Common.loadRecentlyAddProcess(listNewProcess, process);
+                    int idprocess = Integer.parseInt(String.valueOf(processList.getSelectionModel().getSelectedItem().charAt(processList.getItems().get(indexSelected).length() - 1)));
+                    boolean containsData = rest.callrestService(idprocess);
+                    if (containsData) {
+                        rest.getProcessList().getProcessList().stream().map((entity) -> {
+                            process = Common.convertToProcess(entity);
+                            return entity;
+                        }).forEachOrdered((item) -> {
+                            Common.QUANTUM = item.getQuantum();
+                            System.out.println(item.toString());
+                            Platform.runLater(() -> {
+                                Common.processAvailable++;
+                                procAvailable.setText(String.valueOf(Common.processAvailable));
+                                Common.loadRecentlyAddProcess(listNewProcess, process);
+                            });
+                            priorityQueue.push(process.getPriority(), process, process.getPid());
+                            queue.push(process);
+                            wsProcess.add(process);
+                            System.out.println(process.toString());
+                            try {
+                                Thread.sleep(600);
+                            } catch (InterruptedException ex) {
+                                Logger.getLogger(FXMLController.class.getName()).log(Level.SEVERE, null, ex);
+                            }
                         });
-                        priorityQueue.push(process.getPriority(), process, process.getPid());
-                        queue.push(process);
-                        wsProcess.add(process);
-                        try {
-                            Thread.sleep(600);
-                        } catch (InterruptedException ex) {
-                            Logger.getLogger(FXMLController.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    });
+                        Platform.runLater(() -> {
+                            btnLoad.setDisable(false);
+                            progressLoad.setVisible(false);
+                        });
+                    } else {
+                        Platform.runLater(() -> {
+                            btnLoad.setDisable(true);
+                            JFXSnackbar snackbar = new JFXSnackbar(homeAnchor);
+                            snackbar.show("This list not contains Processes", 5000);
+                            progressLoad.setVisible(false);
+                            loadFromws.setDisable(false);
+                        });
+                    }
                 } else {
                     Alert alertD = new Alert(Alert.AlertType.ERROR);
                     alertD.setContentText("You must select an option");
                     alertD.show();
                 }
-                Platform.runLater(() -> {
-                    btnLoad.setDisable(false);
-                    progressLoad.setVisible(false);
-                });
             } catch (NumberFormatException e) {
                 alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Error Input");
@@ -356,10 +367,10 @@ public class FXMLController implements Initializable {
                 anchorCharts.toFront();
             }
         });
-        
+
         x.setLabel("Process");
         y.setLabel("TurnAround");
-        
+
         lblAvailableCharts.textProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
             processList.getItems().remove(indexSelected);
             loadFromws.setDisable(false);
@@ -371,7 +382,7 @@ public class FXMLController implements Initializable {
             Common.processAvailable = 0;
             checkPriority.setDisable(false);
             progressProcessBar.progressProperty().unbind();
-            generalQuantum.setText(generalQuantum.getText().substring(0, generalQuantum.getText().length()-1));
+            generalQuantum.setText(generalQuantum.getText().substring(0, generalQuantum.getText().length() - 1));
         });
 
         initPopup();
@@ -397,13 +408,13 @@ public class FXMLController implements Initializable {
                 processEliminated.setText(String.valueOf(Common.processEliminated));
                 System.out.println(wsProcess.get(index).toString());
                 observerDeleteTable.add(new TableDeleteProcess(
-                        wsProcess.get(index).getPid(), 
-                        wsProcess.get(index).getName(), 
-                        wsProcess.get(index).getBurst(), 
-                        wsProcess.get(index).getPriority(), 
-                        wsProcess.get(index).getCharacters(), 
-                        wsProcess.get(index).getCharacterReplaced(), 
-                        "Delete", 
+                        wsProcess.get(index).getPid(),
+                        wsProcess.get(index).getName(),
+                        wsProcess.get(index).getBurst(),
+                        wsProcess.get(index).getPriority(),
+                        wsProcess.get(index).getCharacters(),
+                        wsProcess.get(index).getCharacterReplaced(),
+                        "Delete",
                         new Date().toString()));
                 wsProcess.remove(index);
 

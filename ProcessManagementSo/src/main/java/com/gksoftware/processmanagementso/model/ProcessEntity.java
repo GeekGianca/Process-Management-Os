@@ -8,6 +8,7 @@ package com.gksoftware.processmanagementso.model;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  *
@@ -36,6 +37,16 @@ public class ProcessEntity implements Serializable {
     private String charactersReplaced;
     @JacksonXmlProperty
     private int quantum;
+    @JacksonXmlProperty
+    private int s_id;
+
+    public int getS_id() {
+        return s_id;
+    }
+
+    public void setS_id(int s_id) {
+        this.s_id = s_id;
+    }
 
     public String getPid() {
         return pid;
@@ -97,8 +108,7 @@ public class ProcessEntity implements Serializable {
         return serialVersionUID;
     }
 
-    public ProcessEntity(String pid, String simulationProcess, String name, int priority, String characters,
-            String charactersReplaced, int quantum) {
+    public ProcessEntity(String pid, String simulationProcess, String name, int priority, String characters, String charactersReplaced, int quantum, int s_id) {
         this.pid = pid;
         this.simulationProcess = simulationProcess;
         this.name = name;
@@ -106,6 +116,7 @@ public class ProcessEntity implements Serializable {
         this.characters = characters;
         this.charactersReplaced = charactersReplaced;
         this.quantum = quantum;
+        this.s_id = s_id;
     }
 
     public ProcessEntity() {
@@ -113,16 +124,16 @@ public class ProcessEntity implements Serializable {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((characters == null) ? 0 : characters.hashCode());
-        result = prime * result + ((charactersReplaced == null) ? 0 : charactersReplaced.hashCode());
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((pid == null) ? 0 : pid.hashCode());
-        result = prime * result + priority;
-        result = prime * result + quantum;
-        result = prime * result + ((simulationProcess == null) ? 0 : simulationProcess.hashCode());
-        return result;
+        int hash = 7;
+        hash = 31 * hash + Objects.hashCode(this.pid);
+        hash = 31 * hash + Objects.hashCode(this.simulationProcess);
+        hash = 31 * hash + Objects.hashCode(this.name);
+        hash = 31 * hash + this.priority;
+        hash = 31 * hash + Objects.hashCode(this.characters);
+        hash = 31 * hash + Objects.hashCode(this.charactersReplaced);
+        hash = 31 * hash + this.quantum;
+        hash = 31 * hash + this.s_id;
+        return hash;
     }
 
     @Override
@@ -136,46 +147,29 @@ public class ProcessEntity implements Serializable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        ProcessEntity other = (ProcessEntity) obj;
-        if (characters == null) {
-            if (other.characters != null) {
-                return false;
-            }
-        } else if (!characters.equals(other.characters)) {
+        final ProcessEntity other = (ProcessEntity) obj;
+        if (this.priority != other.priority) {
             return false;
         }
-        if (charactersReplaced == null) {
-            if (other.charactersReplaced != null) {
-                return false;
-            }
-        } else if (!charactersReplaced.equals(other.charactersReplaced)) {
+        if (this.quantum != other.quantum) {
             return false;
         }
-        if (name == null) {
-            if (other.name != null) {
-                return false;
-            }
-        } else if (!name.equals(other.name)) {
+        if (this.s_id != other.s_id) {
             return false;
         }
-        if (pid == null) {
-            if (other.pid != null) {
-                return false;
-            }
-        } else if (!pid.equals(other.pid)) {
+        if (!Objects.equals(this.pid, other.pid)) {
             return false;
         }
-        if (priority != other.priority) {
+        if (!Objects.equals(this.simulationProcess, other.simulationProcess)) {
             return false;
         }
-        if (quantum != other.quantum) {
+        if (!Objects.equals(this.name, other.name)) {
             return false;
         }
-        if (simulationProcess == null) {
-            if (other.simulationProcess != null) {
-                return false;
-            }
-        } else if (!simulationProcess.equals(other.simulationProcess)) {
+        if (!Objects.equals(this.characters, other.characters)) {
+            return false;
+        }
+        if (!Objects.equals(this.charactersReplaced, other.charactersReplaced)) {
             return false;
         }
         return true;
@@ -183,9 +177,7 @@ public class ProcessEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "ProcessEntity [pid=" + pid + ", simulationProcess=" + simulationProcess + ", name=" + name
-                + ", priority=" + priority + ", characters=" + characters + ", charactersReplaced=" + charactersReplaced
-                + ", quantum=" + quantum + "]";
+        return "ProcessEntity{" + "pid=" + pid + ", simulationProcess=" + simulationProcess + ", name=" + name + ", priority=" + priority + ", characters=" + characters + ", charactersReplaced=" + charactersReplaced + ", quantum=" + quantum + ", s_id=" + s_id + '}';
     }
 
 }
