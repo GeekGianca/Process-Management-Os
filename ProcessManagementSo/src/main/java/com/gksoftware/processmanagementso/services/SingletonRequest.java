@@ -57,6 +57,5 @@ public class SingletonRequest {
                 }
             }
         }, 5000);
-
     }
 }

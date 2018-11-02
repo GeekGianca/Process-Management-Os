@@ -38,6 +38,7 @@ public class ThreadProcess implements Runnable {
     private long timeArrive;
     private DoubleProperty progressBar;
     private int timeEnded;
+    private String lastStatus;
 
     public ThreadProcess(Process process) {
         this.process = process;
@@ -140,6 +141,7 @@ public class ThreadProcess implements Runnable {
                         setTimeArrive(getTimeArrive() + 1);
                         isRunning = false;
                         setterStatusProcessView(pt, "Finished");
+                        lastStatus = "Finished";
                         process.setTimeArrival(getTimeArrive());
                         long endTimeProcess = (Common.QUANTUM * process.getCicle() * 1000);
                         process.setEndtime(endTimeProcess);
@@ -159,6 +161,7 @@ public class ThreadProcess implements Runnable {
                                 setterStatusProcessView(pt, "Ready");
                             } else {
                                 setterStatusProcessView(pt, "Running");
+                                lastStatus = "Running";
                             }
                         }
                     }
@@ -227,9 +230,11 @@ public class ThreadProcess implements Runnable {
     }
 
     private void setterStatusProcessView(ProcessTable pt, String state) {
-        Common.updProcess = new UpdateProcess(process.getSid(), process.getPid(), state);
-        System.out.println(Common.updProcess.toString());
-        Common.request.executeRequest(Common.updProcess.toString());
+//        if (!lastStatus.equals(state)) {
+//            Common.updProcess = new UpdateProcess(process.getSid(), process.getPid(), state);
+//            System.out.println(Common.updProcess.toString());
+//            Common.request.executeRequest(Common.updProcess.toString());
+//        }
         pt.setState(state);
         bindingList.set(process.getPositionView(), pt);
         showLabels();
